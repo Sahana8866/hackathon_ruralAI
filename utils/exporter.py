@@ -114,13 +114,28 @@ def build_docx(
     doc.add_paragraph()
 
     # ── Post-Harvest Loss Data ─────────────────────────────────────────────
-    if not loss_df.empty:
+    if not loss_df.empty and "loss_pct" in loss_df.columns:
         _add_heading(doc, "Expected Post-Harvest Losses (FAO Data)", level=2)
-        rows = [(r["stage"], f"{r['loss_pct']}%", r["cause"]) for _, r in loss_df.iterrows()]
-        total_pct = loss_df["loss_pct"].sum()
-        total_kg  = round(quantity * total_pct / 100, 1)
-        rows.append(["TOTAL", f"{round(total_pct,1)}%", f"≈ {total_kg} kg potential loss"])
-        _add_table(doc, ["Stage", "Loss %", "Main Cause"], rows)
+        has_cause = "cause" in loss_df.columns
+        if has_cause:
+            rows = [
+                (r.get("stage", "Processing"), f"{r['loss_pct']}%", r.get("cause", "—"))
+                for _, r in loss_df.iterrows()
+            ]
+            total_pct = loss_df["loss_pct"].sum()
+            total_kg  = round(quantity * total_pct / 100, 1)
+            rows.append(["TOTAL", f"{round(total_pct,1)}%", f"≈ {total_kg} kg potential loss"])
+            _add_table(doc, ["Stage", "Loss %", "Main Cause"], rows)
+        else:
+            rows = [
+                (r.get("stage", "Processing"), f"{r['loss_pct']}%")
+                for _, r in loss_df.iterrows()
+            ]
+            total_pct = loss_df["loss_pct"].sum()
+            total_kg  = round(quantity * total_pct / 100, 1)
+            rows.append(["TOTAL", f"{round(total_pct,1)}%"])
+            doc.add_paragraph(f"Estimated loss: {total_kg} kg of {crop} at risk without intervention.")
+            _add_table(doc, ["Stage", "Loss %"], rows)
         doc.add_paragraph()
 
     # ── Management Plan (English) ──────────────────────────────────────────
@@ -186,7 +201,7 @@ def build_docx(
     footer_p = doc.add_paragraph()
     footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     fr = footer_p.add_run(
-        "Sources: FAO Food Loss & Waste Database | NABARD AMIF | ICAR Post-Harvest Bulletins | IMD Seasonal Forecast\n"
+        "Sources: FAO Food Loss & Waste Database\n"
         "Team A15 — Post-Harvest Loss Reduction Advisor | AI & Rural Technology Hackathon"
     )
     fr.font.size = Pt(8)
