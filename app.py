@@ -18,6 +18,7 @@ from utils.data_loader import (
     get_fao_data_summary
 )
 from utils.exporter import build_docx
+# from utils.rag_retriever import get_rag_prompt_context, build_vectorstore
 
 # Try IndicTrans2 first, fallback to Google Translator (hidden)
 try:
