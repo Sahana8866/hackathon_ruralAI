@@ -57,7 +57,7 @@ The system implements a complete RAG pipeline using ChromaDB for vector storage:
 
 ### RAG Workflow:
 
-1. FAO dataset and ICAR pest data are chunked and embedded
+1. FAO dataset is chunked and embedded
 2. Embeddings stored in ChromaDB with metadata (source, crop, pest)
 3. On user query, relevant documents retrieved via semantic search
 4. Retrieved context appended to LLM prompt for grounded generation
